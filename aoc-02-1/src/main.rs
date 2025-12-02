@@ -28,7 +28,7 @@ fn main() {
 
 fn is_id_invalid(id: u64) -> bool {
     let id_str = id.to_string();
-    let l = id_str.len();
+    let l = id_str.chars().count();
 
     if l % 2 == 1 {
         return false;
