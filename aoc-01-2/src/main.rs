@@ -1,7 +1,6 @@
 use std::env;
-use std::fs::File;
-use std::io::{self, BufRead, BufReader, Lines};
 use std::path::Path;
+use aoc_shared::line_iterator;
 
 const START: i16 = 50;
 
@@ -41,9 +40,4 @@ fn main() {
         }
     }
     print!("Clicks through 0 encountered in sequence: {}", clicks)
-}
-
-fn line_iterator(filename: &Path) -> io::Result<Lines<BufReader<File>>> {
-    let file = File::open(filename)?;
-    Ok(BufReader::new(file).lines())
 }
