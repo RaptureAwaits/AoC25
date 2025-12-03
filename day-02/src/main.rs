@@ -1,11 +1,7 @@
-use std::env;
-use std::path::Path;
-use aoc_shared::read_delimited_file;
+use aoc_shared::{get_input_filepath, read_delimited_file};
 
 fn main() {
-    let root_dir = env::current_dir().unwrap();
-    let input_file = Path::new("inputs.txt");
-    let filepath = root_dir.join(input_file);
+    let filepath = get_input_filepath();
 
     let mut invalid_id_sum_p1: u64 = 0;
     let mut invalid_id_sum_p2: u64 = 0;
