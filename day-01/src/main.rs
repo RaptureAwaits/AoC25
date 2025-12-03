@@ -26,7 +26,7 @@ fn main() {
             let new_dial_actual = new_dial.rem_euclid(100);
 
             zeroes_p1 += process_input_p1(new_dial_actual);
-            zeroes_p2 += process_input_p2(dial, turn, new_dial, new_dial_actual);
+            zeroes_p2 += process_input_p2(dial, turn, new_dial_actual);
 
             dial = new_dial_actual;
 
@@ -44,7 +44,7 @@ fn process_input_p1(new_dial_actual: i16) -> i16 {
     }
 }
 
-fn process_input_p2(current_dial: i16, turn: i16, new_dial: i16, new_dial_actual: i16) -> i16 {
+fn process_input_p2(current_dial: i16, turn: i16, new_dial_actual: i16) -> i16 {
     let full_turns = {turn / 100}.abs();
     let rem: i16 = turn % 100;
 
@@ -53,7 +53,7 @@ fn process_input_p2(current_dial: i16, turn: i16, new_dial: i16, new_dial_actual
         zeroes += 1
     }
 
-    println!("{} -> {} -> {} => {} zeroes", current_dial, turn, new_dial_actual, zeroes);
+    // println!("{} -> {} -> {} => {} zeroes", current_dial, turn, new_dial_actual, zeroes);
 
     zeroes
 }
