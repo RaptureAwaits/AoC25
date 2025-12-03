@@ -1,7 +1,0 @@
-[package]
-name = "AoC-01-1"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-aoc_shared = { path = "../aoc_shared" }

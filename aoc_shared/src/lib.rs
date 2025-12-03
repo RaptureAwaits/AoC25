@@ -1,7 +1,14 @@
 use std::fs::{File, read_to_string};
-use std::io;
+use std::{env, io};
 use std::io::{BufRead, BufReader, Lines};
-use std::path::Path;
+use std::path::{Path, PathBuf};
+
+pub fn get_input_filepath() -> PathBuf {
+    let root_dir = env::current_dir().unwrap();
+    let input_file = Path::new("inputs.txt");
+    let filepath = root_dir.join(input_file);
+    filepath
+}
 
 pub fn read_delimited_file(filename: &Path, delimiter: char) -> Vec<String>{
     let list_string = read_to_string(filename).unwrap();
