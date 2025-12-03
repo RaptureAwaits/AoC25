@@ -3,36 +3,66 @@ use aoc_shared::{get_input_filepath, line_iterator};
 fn main() {
     let filepath = get_input_filepath();
 
-    let mut max_joltage_sum: u32 = 0;
+    let mut max_joltage_sum_p1: u64 = 0;
+    let mut max_joltage_sum_p2: u64 = 0;
     if let Ok(inputs) = line_iterator(&filepath) {
         for bank in inputs.map_while(Result::ok) {
-            let mut d1: u8 = 0;
-            let mut d2: u8 = 0;
-            let mut d1_pend: Option<u8> = None;
-
             let jolts = bank.chars()
                 .map(|c| c.to_digit(10).unwrap() as u8)
                 .collect::<Vec<u8>>();
 
-            for joltage in jolts {
-                if d1_pend.is_some() {
-                    d1 = d1_pend.unwrap();
-                    d2 = joltage;
-                    d1_pend = None;
-                } else if joltage > d2 {
-                    d2 = joltage;
-                }
+            let max_joltage_p1 = get_max_joltage(&jolts, 2);
+            // println!("{} => {}", bank, max_joltage_p1);
+            max_joltage_sum_p1 += max_joltage_p1;
 
-                if joltage > d1 {
-                    d1_pend = Some(joltage);
-                }
-            }
-
-            let max_joltage = 10 * d1 + d2;
-            // println!("{} => {}", bank, max_joltage);
-            max_joltage_sum += max_joltage as u32;
+            let max_joltage_p2 = get_max_joltage(&jolts, 12);
+            // println!("{} => {}", bank, max_joltage_p2);
+            max_joltage_sum_p2 += max_joltage_p2;
         }
 
-        println!("The maximum achievable joltage across all banks is {}", max_joltage_sum);
+        println!("The maximum safe joltage across all banks is {}", max_joltage_sum_p1);
+        println!("The maximum unsafe joltage across all banks is {}", max_joltage_sum_p2);
     }
+}
+
+fn get_max_joltage(jolts: &Vec<u8>, n_digits: usize) -> u64 {
+    let bank_length = jolts.len();
+
+    let mut digits_by_jolt_index = {0..n_digits}.collect::<Vec<usize>>();
+
+    let mut jolt_index: usize = 0;
+    while jolt_index < bank_length {
+        let joltage = jolts[jolt_index];
+        let batteries_to_right = jolts.len() - 1 - jolt_index;
+
+        let mut digit_index: usize = 0;
+        while digit_index < n_digits {
+            let dji = digits_by_jolt_index[digit_index];
+            if dji >= jolt_index {
+                break;
+            }
+
+            let digit = jolts[dji];
+            let digits_to_right = n_digits - 1 - digit_index;
+
+            if joltage > digit && batteries_to_right >= digits_to_right {
+                let mut new_digit_indices = digits_by_jolt_index[0..digit_index].to_vec();
+                new_digit_indices.extend({jolt_index..jolt_index + 1 + digits_to_right}.collect::<Vec<usize>>());
+                digits_by_jolt_index = new_digit_indices;
+                break;
+            }
+
+            digit_index += 1;
+        }
+        jolt_index += 1;
+    }
+
+    let max_joltage = digits_by_jolt_index
+        .iter()
+        .map(|u| jolts[*u].to_string())
+        .collect::<String>()
+        .parse::<u64>()
+        .unwrap();
+
+    max_joltage
 }
