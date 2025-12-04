@@ -35,6 +35,7 @@ fn main() {
     }
     println!("The total number of accessible papers before removal is {}", removed_papers);
 
+    // This block completes the remaining iterations for part 2
     let mut removed_papers_this_iter: u32 = 1;
     while removed_papers_this_iter > 0 {
         let mut row_window: Vec<Vec<char>> = p2_tiles[0..3].to_vec();
