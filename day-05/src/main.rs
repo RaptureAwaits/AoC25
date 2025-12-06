@@ -27,6 +27,12 @@ fn main() {
             }
         }
         println!("There are {} fresh ingredients in stock", fresh_count);
+
+        let mut total_fresh_ids: u64 = 0;
+        for (start, end) in ranges {
+            total_fresh_ids += { end - start } + 1;
+        }
+        println!("There are {} total fresh IDs", total_fresh_ids);
     }
 }
 
@@ -49,21 +55,24 @@ fn insert_new_range(range_str: String, ranges: &mut Vec<(u64, u64)>) {
         }
 
         if start <= rs {
-            if end > re {
+            if end >= re {
                 ranges[range_index] = (start, end);
             } else {
                 ranges.insert(range_index, (start, end));
             }
-            break;
+            return;
+        } else if end <= re {
+            return;
         }
     }
-
+    ranges.push((start, end));
 }
 
 fn condense_ranges(ranges: &mut Vec<(u64, u64)>) {
     // If adjacent ranges have no space between them, combine them into one range to optimize future iteration
     let mut range_index: usize = 0;
     let mut length: usize = ranges.len();
+
     while range_index < length - 1 {
         let (s, e) = ranges[range_index];
         let (ns, ne) = ranges[range_index + 1];
