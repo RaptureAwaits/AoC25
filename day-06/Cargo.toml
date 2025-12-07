@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 aoc_shared = { path = "../aoc_shared" }
+transpose = "0.2.3"
