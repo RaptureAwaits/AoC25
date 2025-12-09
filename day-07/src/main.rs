@@ -19,11 +19,48 @@ impl BeamTree {
     fn get_node(&mut self, index: usize) -> &mut Beam {
         &mut self.beams[index]
     }
+
+    // fn display_node(&self, index: usize, path: String) {
+    //     if self.beams[index].left.is_some() {
+    //         print!("{}", self.beams[index].left.unwrap());
+    //     }
+    //     print!(" <- {} ({}) -> ", index, path);
+    //     if self.beams[index].right.is_some() {
+    //         print!("{}", self.beams[index].right.unwrap());
+    //     }
+    //     println!("\n");
+    // }
+
+    fn count_branches(&mut self, beam_index: usize, path: String) -> u64 {
+        if self.beams[beam_index].branches > 0 {
+            return self.beams[beam_index].branches;
+        } else {
+            // self.display_node(beam_index, path.clone());
+        }
+
+        if self.beams[beam_index].left.is_none() && self.beams[beam_index].right.is_none() {
+            self.beams[beam_index].branches = 1;
+            return 1;
+        }
+
+        let mut branches = 0;
+        if self.beams[beam_index].left.is_some() {
+            branches += self.count_branches(self.beams[beam_index].left.unwrap(), path.clone() + "L");
+        }
+
+        if self.beams[beam_index].right.is_some() {
+            branches += self.count_branches(self.beams[beam_index].right.unwrap(), path.clone() + "R");
+        }
+
+        self.beams[beam_index].branches = branches;
+        branches
+    }
 }
 
 
 struct Beam {
     index: usize,
+    branches: u64,
 
     x: usize,
     active: bool,
@@ -34,7 +71,7 @@ struct Beam {
 
 impl Beam {
     fn new(index: usize, x: usize) -> Beam {
-        Beam {index, x, active: true, left: None, right: None }
+        Beam {index, branches: 0, x, active: true, left: None, right: None }
     }
 }
 
@@ -150,7 +187,12 @@ fn main() {
             //     .map(|u| { if u.is_some() { u.unwrap().to_string() } else { "X".to_string() } })
             //     .collect::<String>());
         }
+
+        // Part 1
         println!("The beam has been split {} times", splits);
+
+        // Part 2
+        println!("There are {} possible timelines for the beam", beam_tree.count_branches(0, String::new()))
     }
 }
 
