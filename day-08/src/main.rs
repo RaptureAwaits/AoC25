@@ -145,52 +145,9 @@ fn main() {
 
         distances.sort();
 
-        for distance in distances[..1000].iter() {
-            let j1_circuit_index = junction_network.get_junction(distance.from).circuit;
-            let j2_circuit_index = junction_network.get_junction(distance.to).circuit;
-
-            match (j1_circuit_index, j2_circuit_index) {
-                (Some(c1_index), Some(c2_index)) => {  // Merge two circuits (c1, c2) into one (c2)
-                    let c1_junctions = circuit_network.get_circuit(c1_index).junctions
-                        .drain(..)
-                        .collect::<Vec<JunctionIndex>>();
-
-                    let c2 = circuit_network.get_circuit(c2_index);
-                    for j_index in c1_junctions {
-                        let j = junction_network.get_junction_mut(j_index);
-                        j.circuit = Some(c2_index);  // Update membership field of junction
-                        c2.junctions.push(j_index);  // Update ownership list of circuit
-                    }
-                },
-                (Some(c1_index), None) => {  // Add j2 to c1
-                    let c1 = circuit_network.get_circuit(c1_index);
-                    let j2 = junction_network.get_junction_mut(distance.to);
-                    j2.circuit = Some(c1_index);
-                    c1.junctions.push(j2.index);
-                },
-                (None, Some(c2_index)) => {  // Add j1 to c2
-                    let c2 = circuit_network.get_circuit(c2_index);
-                    let j1 = junction_network.get_junction_mut(distance.from);
-                    j1.circuit = Some(c2_index);
-                    c2.junctions.push(j1.index);
-                },
-                (None, None) => {  // Create a new circuit with j1 and j2
-                    let c_new_index = circuit_network.new_circuit();
-                    let c_new = circuit_network.get_circuit(c_new_index);
-
-                    {
-                        let j1 = junction_network.get_junction_mut(distance.from);
-                        j1.circuit = Some(c_new.index);
-                        c_new.junctions.push(j1.index);
-                    }
-
-                    {
-                        let j2 = junction_network.get_junction_mut(distance.to);
-                        j2.circuit = Some(c_new.index);
-                        c_new.junctions.push(j2.index);
-                    }
-                }
-            }
+        let mut distance_index: usize = 10;
+        for distance in distances[..distance_index].iter() {
+            connect_junctions(distance, &mut junction_network, &mut circuit_network);
         }
 
         let mut populated_circuits = circuit_network.circuits.iter().filter(|c| c.junctions.len() > 0).collect::<Vec<&Circuit>>();
@@ -202,5 +159,83 @@ fn main() {
             size_mult *= circuit.junctions.len();
         }
         println!("The multiplied size of the largest 3 circuits is {}", size_mult);
+
+        while circuit_network.circuits.iter().map(|c| c.junctions.len()).max() < Some(junction_network.junctions.len()) {
+            connect_junctions(&distances[distance_index], &mut junction_network, &mut circuit_network);
+            distance_index += 1;
+        }
+
+        let x1 = junction_network.get_junction(distances[distance_index - 1].from).x;
+        let x2 = junction_network.get_junction(distances[distance_index - 1].to).x;
+        println!("The total of the x co-ordinates of the last 2 connected junctions is {} * {} = {}", x1, x2, x1 * x2);
+        // NOT
+        // - 4083022176 (too high)
     }
+}
+
+fn connect_junctions(distance: &Distance, junction_network: &mut JunctionNetwork, circuit_network: &mut CircuitNetwork) {
+    let j1_circuit_index = junction_network.get_junction(distance.from).circuit;
+    let j2_circuit_index = junction_network.get_junction(distance.to).circuit;
+
+    {
+        let j1 = junction_network.get_junction(distance.from);
+        let j2 = junction_network.get_junction(distance.to);
+        // println!(
+        //     "Connecting {} ({}, {}, {}) to {} ({}, {}, {}) - dist = {}",
+        //     j1.index, j1.x, j1.y, j1.z,
+        //     j2.index, j2.x, j2.y, j2.z,
+        //     distance.dist
+        // );
+    }
+
+    match (j1_circuit_index, j2_circuit_index) {
+        (Some(c1_index), Some(c2_index)) => {  // Merge two circuits (c1, c2) into one (c2)
+            if c1_index == c2_index {
+                return
+            }
+
+            let c1_junctions = circuit_network.get_circuit(c1_index).junctions
+                .drain(..)
+                .collect::<Vec<JunctionIndex>>();
+
+            let c2 = circuit_network.get_circuit(c2_index);
+            for j_index in c1_junctions {
+                let j = junction_network.get_junction_mut(j_index);
+                j.circuit = Some(c2_index);  // Update membership field of junction
+                c2.junctions.push(j_index);  // Update ownership list of circuit
+            }
+        },
+
+        (Some(c1_index), None) => {  // Add j2 to c1
+            let c1 = circuit_network.get_circuit(c1_index);
+            let j2 = junction_network.get_junction_mut(distance.to);
+            j2.circuit = Some(c1_index);
+            c1.junctions.push(j2.index);
+        },
+
+        (None, Some(c2_index)) => {  // Add j1 to c2
+            let c2 = circuit_network.get_circuit(c2_index);
+            let j1 = junction_network.get_junction_mut(distance.from);
+            j1.circuit = Some(c2_index);
+            c2.junctions.push(j1.index);
+        },
+
+        (None, None) => {  // Create a new circuit with j1 and j2
+            let c_new_index = circuit_network.new_circuit();
+            let c_new = circuit_network.get_circuit(c_new_index);
+
+            {
+                let j1 = junction_network.get_junction_mut(distance.from);
+                j1.circuit = Some(c_new.index);
+                c_new.junctions.push(j1.index);
+            }
+
+            {
+                let j2 = junction_network.get_junction_mut(distance.to);
+                j2.circuit = Some(c_new.index);
+                c_new.junctions.push(j2.index);
+            }
+        }
+    }
+    // println!("{}", circuit_network.circuits.iter().map(|c| c.junctions.len().to_string() + ", ").collect::<String>());
 }
