@@ -168,8 +168,6 @@ fn main() {
         let x1 = junction_network.get_junction(distances[distance_index - 1].from).x;
         let x2 = junction_network.get_junction(distances[distance_index - 1].to).x;
         println!("The total of the x co-ordinates of the last 2 connected junctions is {} * {} = {}", x1, x2, x1 * x2);
-        // NOT
-        // - 4083022176 (too high)
     }
 }
 
