@@ -107,8 +107,8 @@ fn main() {
             }
 
             // Create green area boundary for part 2
-            if tiles.len() > 0 {
-                boundaries.push(Boundary::new(tiles[new_tile_index - 1].pos.clone(), tiles[new_tile_index].pos.clone()));
+            if tiles.len() > 1 {
+                boundaries.push(Boundary::new(tiles[tiles.len() - 2].pos.clone(), tiles[tiles.len() - 1].pos.clone()));
             }
         }
         boundaries.push(Boundary::new(tiles[0].pos.clone(), tiles[boundaries.len()].pos.clone()));
