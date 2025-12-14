@@ -3,10 +3,13 @@ use aoc_shared::{get_input_filepath, line_iterator};
 
 struct Machine {
     buttons: Vec<Vec<bool>>,
-    joltages: Vec<u16>,
+    basis_buttons: Vec<Vec<bool>>,
 
     state: Vec<bool>,
     target: Vec<bool>,
+
+    jolt_state: Vec<u16>,
+    jolt_target: Vec<u16>,
 }
 
 impl fmt::Display for Machine {
@@ -22,7 +25,7 @@ impl fmt::Display for Machine {
             ));
         }
         write_parts.push(format!(
-            "{{{}}}", self.joltages.iter().map(|u| u.to_string()).collect::<Vec<String>>().join(",")
+            "{{{}}}", self.jolt_target.iter().map(|u| u.to_string()).collect::<Vec<String>>().join(",")
         ));
         write!(f, "{}", write_parts.join(""))
     }
@@ -37,10 +40,14 @@ impl Machine {
         let jolts_vec: Vec<u16> = vec![];
 
         let mut new_machine = Machine {
-            target: light_vec,
             buttons: button_vec,
-            joltages: jolts_vec,
+            basis_buttons: vec![],
+
             state: vec![],
+            target: light_vec,
+
+            jolt_state: vec![],
+            jolt_target: jolts_vec,
         };
 
         for split in splits {
@@ -54,6 +61,7 @@ impl Machine {
                             .collect::<Vec<bool>>()
                     };
                     new_machine.state = vec![false; new_machine.target.len()];
+                    new_machine.jolt_state = vec![0; new_machine.jolt_target.len()];
                 }
 
                 ['(', ..] => new_machine.add_button(
@@ -64,7 +72,7 @@ impl Machine {
                         .collect::<Vec<usize>>()
                 ),
 
-                ['{', ..] => new_machine.joltages = {
+                ['{', ..] => new_machine.jolt_target = {
                     split[1..split.len() - 1]
                         .split(",")
                         .filter(|c| !c.is_empty())
@@ -89,13 +97,17 @@ impl Machine {
     }
 
     fn push_button(&mut self, button_index: usize) {
-        for i in 0..self.target.len() {
-            self.state[i] = self.state[i] ^ self.buttons[button_index][i];
+        for (i, b) in self.buttons[button_index].iter().enumerate() {
+            if *b {
+                self.state[i] = !self.state[i];
+                self.jolt_state[i] += 1;
+            }
         }
     }
 
     fn reset(&mut self) {
         self.state = vec![false; self.target.len()];
+        self.jolt_state = vec![0; self.jolt_target.len()];
     }
 
     fn print_state(&self) {
@@ -104,6 +116,12 @@ impl Machine {
 
         let target = self.target.iter().map(|b| if *b { '#' } else { '.' }).collect::<String>();
         println!("{}", target);
+
+        let jolt_state = self.jolt_state.iter().map(|u| u.to_string()).collect::<Vec<String>>().join(",");
+        println!("{}", jolt_state);
+
+        let jolt_target = self.jolt_target.iter().map(|u| u.to_string()).collect::<Vec<String>>().join(",");
+        println!("{}", jolt_target);
 
         println!("\n");
     }
@@ -120,7 +138,10 @@ fn main() {
     }
 
     let mut presses: usize = 0;
-    for mut machine in machines {
+    let mut jolt_presses: usize = 0;
+
+    // Part 1
+    for mut machine in &mut machines {
         let c: u32 = { 2 as u32 }.pow(machine.buttons.len() as u32);
         let mut combinations = { 0..c }
             .map(|u| format!("{:0>pad$b}", u, pad = machine.buttons.len())
@@ -147,4 +168,17 @@ fn main() {
         }
     }
     println!("The fewest presses to activate every machine is {}", presses);
+
+    // Part 2
+    for mut machine in machines {
+        machine.reset();
+
+        // Combination logic for multiple presses
+        // Calculate "basis buttons" to eliminate redundant buttons
+
+        if machine.jolt_state == machine.jolt_target {
+            break;
+        }
+    }
+    println!("The fewest presses to configure every machine's joltage is {}", jolt_presses);
 }
